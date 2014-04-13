@@ -4,7 +4,7 @@ module Appium
   module Device
     extend Forwardable
 
-    NoArgMethods = {
+    NoArgPostMethods = {
       shake: 'session/:session_id/appium/device/shake',
       launch: 'session/:session_id/appium/app/launch',
       closeApp: 'session/:session_id/appium/app/close',
@@ -14,7 +14,7 @@ module Appium
       def extended(mod)
         extend_webdriver_with_forwardable
         
-        NoArgMethods.each_pair do |m, p|
+        NoArgPostMethods.each_pair do |m, p|
           add_endpoint_method m, p
         end
 
@@ -35,15 +35,24 @@ module Appium
             execute :remove, {}, :appId => id
           end
         end
+
+        add_endpoint_method(:available_contexts, 'session/:session_id/contexts', :get)
+        add_endpoint_method(:current_context, 'session/:session_id/context', :get)
+        
+        add_endpoint_method(:current_context=, 'session/:session_id/context') do
+          def current_context=(context=null)
+            execute :current_context=, {}, :context => context
+          end
+        end
       end 
 
-      def add_endpoint_method(method, path)
+      def add_endpoint_method(method, path, verb=:post)
         if block_given?
           # &Proc.new with no args passes the passed_in block
           # Because creating Procs from blocks is slow
-          create_bridge_command method, path, &Proc.new
+          create_bridge_command method, verb, path, &Proc.new
         else
-          create_bridge_command method, path
+          create_bridge_command method, verb, path
         end
 
         delegate_driver_method method
@@ -66,12 +75,12 @@ module Appium
         def_delegator :@driver, method
       end
 
-      def create_bridge_command(method, path)
+      def create_bridge_command(method, verb, path)
         # Don't clobber methods that are moved into Selenium
         log_reimplemented_warning(method, path) if selenium_has method
 
         Selenium::WebDriver::Remote::Bridge.class_eval do
-          command method, :post, path
+          command method, verb, path
           if block_given?
             class_eval &Proc.new
           else
@@ -95,6 +104,16 @@ module Appium
         msg << " Raise an issue at http://www.github.com/appium/ruby_lib if so."
         Appium::Logger.warn msg
       end
+    end
+
+    def within_context(context)
+      existing_context = current_context
+      yield if block_given?
+      current_context = existing_context
+    end
+
+    def switch_to_default_context
+      current_context = nil
     end
   end
 end
