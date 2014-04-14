@@ -8,12 +8,9 @@ module Appium
       shake: 'session/:session_id/appium/device/shake',
       launch: 'session/:session_id/appium/app/launch',
       closeApp: 'session/:session_id/appium/app/close',
-      reset: 'session/:session_id/appium/app/reset'
     }
 
     class << self
-      # @!method reset
-      #   Resets the device and relaunches the application
       def extended(mod)
         extend_webdriver_with_forwardable
         
