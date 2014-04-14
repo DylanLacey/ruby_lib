@@ -71,6 +71,15 @@ iOS uses accessibility label with a fallback to text.
 
 --
 
+#### contexts
+0. `(Array<String>) available_contexts` List of available contexts.
+0. `(String) current_context` The context currently in use.
+0. `(void) current_context=(value)` Change to the `value` context.
+0. `(void) switch_to_default_context` Change to the default (`null`) context.
+0. `(void) within_context(value)` Execute a block within the `value` context, then return to the previous context.
+
+--
+
 #### alert
 0. `(void) alert_accept` Accept the alert.
 0. `(String) alert_accept_text` Get the text of the alert's accept button.
