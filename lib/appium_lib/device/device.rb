@@ -44,6 +44,8 @@ module Appium
             execute :current_context=, {}, :context => context
           end
         end
+
+        extend_search_contexts
       end 
 
       def add_endpoint_method(method, path, verb=:post)
@@ -106,6 +108,19 @@ module Appium
         end
         msg << " Raise an issue at http://www.github.com/appium/ruby_lib if so."
         Appium::Logger.warn msg
+      end
+
+
+      # @!method accessiblity_id_find
+      #   find_element/s with their accessibility_id
+      #
+      #   ```ruby
+      #    find_elements :accessibility_id, 'Animation'
+      #   ```
+      def extend_search_contexts
+        Selenium::WebDriver::SearchContext.class_eval do
+          Selenium::WebDriver::SearchContext::FINDERS[:accessibility_id] = 'accessibility id'
+        end
       end
     end
 
